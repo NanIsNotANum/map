@@ -1,0 +1,164 @@
+<html>
+<head>
+    <title>OSM Local Tiles</title>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+    <!-- bring in the OpenLayers javascript library -->
+    <script src="OpenLayers.js"></script>
+    <!-- bring in the OpenStreetMap OpenLayers layers. -->
+    <script src="OpenStreetMap.js"></script>
+ 
+    <script type="text/javascript">
+// Start position for the map (hardcoded here for simplicity)
+        var lat=52.513;
+        var lon=13.38;
+        var zoom=14;
+ 
+        var map; //complex object of type OpenLayers.Map
+ 
+        //Initialise the 'map' object
+        function init() {
+ 
+            map = new OpenLayers.Map ("map", {
+                controls:[
+                    new OpenLayers.Control.Navigation(),
+                    new OpenLayers.Control.PanZoomBar(),
+                    new OpenLayers.Control.Permalink(),
+                    new OpenLayers.Control.ScaleLine({geodesic: true}),
+                    new OpenLayers.Control.Permalink('permalink'),
+                    new OpenLayers.Control.MousePosition(),                    
+                    new OpenLayers.Control.Attribution()],
+                maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+                maxResolution: 156543.0339,
+                numZoomLevels: 19,
+                units: 'm',
+                projection: new OpenLayers.Projection("EPSG:900913"),
+                displayProjection: new OpenLayers.Projection("EPSG:4326")
+            } );
+            
+            layerMapnik = new OpenLayers.Layer.OSM.Mapnik("Mapnik");
+            layerMapnik.setOpacity(0.4);
+            map.addLayer(layerMapnik); 
+            
+            // layerCycleMap = new OpenLayers.Layer.OSM.CycleMap("CycleMap");
+            // layerCycleMap.setOpacity(0.4);
+            // map.addLayer(layerCycleMap);
+
+            // This is the layer that uses the locally stored tiles
+            var newLayer = new OpenLayers.Layer.OSM("Local Tiles", "Tiles/${z}/${x}/${y}.png", {numZoomLevels: 18, alpha: false, isBaseLayer: true});
+            map.addLayer(newLayer);
+            // This is the end of the layer
+ 
+                var switcherControl = new OpenLayers.Control.LayerSwitcher();
+                map.addControl(switcherControl);
+                switcherControl.maximizeControl();
+ 
+            if( ! map.getCenter() ){
+                var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+                map.setCenter (lonLat, zoom);
+            }
+        }
+ //drawing part############################################################################################
+var raster = new ol.layer.Tile({
+  source: new ol.source.MapQuest({layer: 'sat'})
+});
+
+var source = new ol.source.Vector({wrapX: false});
+
+var vector = new ol.layer.Vector({
+  source: source,
+  style: new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    image: new ol.style.Circle({
+      radius: 7,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  })
+});
+ var draw; // global so we can remove it later
+function addInteraction() {
+  var value = typeSelect.value;
+  if (value !== 'None') {
+    var geometryFunction, maxPoints;
+    if (value === 'Square') {
+      value = 'Circle';
+      geometryFunction = ol.interaction.Draw.createRegularPolygon(4);
+    } else if (value === 'Box') {
+      value = 'LineString';
+      maxPoints = 2;
+      geometryFunction = function(coordinates, geometry) {
+        if (!geometry) {
+          geometry = new ol.geom.Polygon(null);
+        }
+        var start = coordinates[0];
+        var end = coordinates[1];
+        geometry.setCoordinates([
+          [start, [start[0], end[1]], end, [end[0], start[1]], start]
+        ]);
+        return geometry;
+      };
+    }
+    draw = new ol.interaction.Draw({
+      source: source,
+      type: /** @type {ol.geom.GeometryType} */ (value),
+      geometryFunction: geometryFunction,
+      maxPoints: maxPoints
+    });
+    map.addInteraction(draw);
+  }
+}
+
+
+/**
+ * Let user change the geometry type.
+ * @param {Event} e Change event.
+ */
+typeSelect.onchange = function(e) {
+  map.removeInteraction(draw);
+  addInteraction();
+};
+
+addInteraction();
+
+
+    </script>
+</head>
+ 
+<!-- body.onload is called once the page is loaded (call the 'init' function) -->
+<body onload="init();">
+ <div class="container-fluid">
+
+<div class="row-fluid">
+  <div class="span12">
+    <div id="map" class="map"></div>
+    <form class="form-inline">
+      <label>Geometry type &nbsp;</label>
+      <select id="type">
+        <option value="None">None</option>
+        <option value="Point">Point</option>
+        <option value="LineString">LineString</option>
+        <option value="Polygon">Polygon</option>
+        <option value="Circle">Circle</option>
+        <option value="Square">Square</option>
+        <option value="Box">Box</option>
+      </select>
+    </form>
+      <div id="info">haha</div>
+  </div>
+
+</div>
+
+
+    <!-- define a DIV into which the map will appear. Make it take up the whole window -->
+    <!--<div style="width:100%; height:100%" id="map"></div> -->
+ 
+</body>
+ 
+</html>
