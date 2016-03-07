@@ -56,76 +56,113 @@
                 var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
                 map.setCenter (lonLat, zoom);
             }
+       
+ map.addControl(new OpenLayers.Control.LayerSwitcher());
+                map.addControl(new OpenLayers.Control.MousePosition());
+
+                controls = {
+                    point: new OpenLayers.Control.DrawFeature(vectors,
+                                OpenLayers.Handler.Point),
+                    line: new OpenLayers.Control.DrawFeature(vectors,
+                                OpenLayers.Handler.Path),
+                    polygon: new OpenLayers.Control.DrawFeature(vectors,
+                                OpenLayers.Handler.Polygon),
+                    drag: new OpenLayers.Control.DragFeature(vectors)
+                };
+
+                for(var key in controls) {
+                    map.addControl(controls[key]);
+                }
+
+                map.setCenter(new OpenLayers.LonLat(0, 0), 3);
+                document.getElementById('noneToggle').checked = true;
         }
+
+
  //drawing part############################################################################################
-var raster = new ol.layer.Tile({
-  source: new ol.source.MapQuest({layer: 'sat'})
-});
-
-var source = new ol.source.Vector({wrapX: false});
-
-var vector = new ol.layer.Vector({
-  source: source,
-  style: new ol.style.Style({
-    fill: new ol.style.Fill({
-      color: 'rgba(255, 255, 255, 0.2)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#ffcc33',
-      width: 2
-    }),
-    image: new ol.style.Circle({
-      radius: 7,
-      fill: new ol.style.Fill({
-        color: '#ffcc33'
-      })
-    })
-  })
-});
- var draw; // global so we can remove it later
-function addInteraction() {
-  var value = typeSelect.value;
-  if (value !== 'None') {
-    var geometryFunction, maxPoints;
-    if (value === 'Square') {
-      value = 'Circle';
-      geometryFunction = ol.interaction.Draw.createRegularPolygon(4);
-    } else if (value === 'Box') {
-      value = 'LineString';
-      maxPoints = 2;
-      geometryFunction = function(coordinates, geometry) {
-        if (!geometry) {
-          geometry = new ol.geom.Polygon(null);
-        }
-        var start = coordinates[0];
-        var end = coordinates[1];
-        geometry.setCoordinates([
-          [start, [start[0], end[1]], end, [end[0], start[1]], start]
-        ]);
-        return geometry;
-      };
-    }
-    draw = new ol.interaction.Draw({
-      source: source,
-      type: /** @type {ol.geom.GeometryType} */ (value),
-      geometryFunction: geometryFunction,
-      maxPoints: maxPoints
-    });
-    map.addInteraction(draw);
-  }
-}
 
 
-/**
- * Let user change the geometry type.
- * @param {Event} e Change event.
- */
-typeSelect.onchange = function(e) {
-  map.removeInteraction(draw);
-  addInteraction();
-};
+            
 
-addInteraction();
+            function toggleControl(element) {
+                for(key in controls) {
+                    var control = controls[key];
+                    if(element.value == key && element.checked) {
+                        control.activate();
+                    } else {
+                        control.deactivate();
+                    }
+                }
+            }
+
+// var raster = new ol.layer.Tile({
+//   source: new ol.source.MapQuest({layer: 'sat'})
+// });
+
+// var source = new ol.source.Vector({wrapX: false});
+
+// var vector = new ol.layer.Vector({
+//   source: source,
+//   style: new ol.style.Style({
+//     fill: new ol.style.Fill({
+//       color: 'rgba(255, 255, 255, 0.2)'
+//     }),
+//     stroke: new ol.style.Stroke({
+//       color: '#ffcc33',
+//       width: 2
+//     }),
+//     image: new ol.style.Circle({
+//       radius: 7,
+//       fill: new ol.style.Fill({
+//         color: '#ffcc33'
+//       })
+//     })
+//   })
+// });
+//  var draw; // global so we can remove it later
+// function addInteraction() {
+//   var value = typeSelect.value;
+//   if (value !== 'None') {
+//     var geometryFunction, maxPoints;
+//     if (value === 'Square') {
+//       value = 'Circle';
+//       geometryFunction = ol.interaction.Draw.createRegularPolygon(4);
+//     } else if (value === 'Box') {
+//       value = 'LineString';
+//       maxPoints = 2;
+//       geometryFunction = function(coordinates, geometry) {
+//         if (!geometry) {
+//           geometry = new ol.geom.Polygon(null);
+//         }
+//         var start = coordinates[0];
+//         var end = coordinates[1];
+//         geometry.setCoordinates([
+//           [start, [start[0], end[1]], end, [end[0], start[1]], start]
+//         ]);
+//         return geometry;
+//       };
+//     }
+//     draw = new ol.interaction.Draw({
+//       source: source,
+//       type: /** @type {ol.geom.GeometryType} */ (value),
+//       geometryFunction: geometryFunction,
+//       maxPoints: maxPoints
+//     });
+//     map.addInteraction(draw);
+//   }
+// }
+
+
+// /**
+//  * Let user change the geometry type.
+//  * @param {Event} e Change event.
+//  */
+// typeSelect.onchange = function(e) {
+//   map.removeInteraction(draw);
+//   addInteraction();
+// };
+
+// addInteraction();
 
 
     </script>
