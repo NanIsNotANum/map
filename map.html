@@ -1,12 +1,13 @@
 
  <html>
 <head>
-  <title>Leaflet.draw vector editing handlers</title>
+  <title>Disaster Report System</title>
 
   <script src="leaflet-src.js"></script>
   <link rel="stylesheet" href="leaflet.css" />
 
   <script src="leaflet.draw-src.js"></script>
+  <script src="jquery-2.2.1.js " type="text/javascript"></script>
   <link rel="stylesheet" href="leaflet.draw.css" />
   
   <script src="L.Control.MousePosition.js"></script>
@@ -15,16 +16,64 @@
 
 </head>
 <body>
+ <h2 id="app-titile">Disaster Report System</h2>
 <div id="container">
+  
   <div id="map"></div>
+  
   <div id="info">
-  <form>
-  <input type="select"></input>
-    <input type="text">asd</input>
-<form>
+
+<h2 id="onlineStatus">Status: Online Now</h2>
+
+  <input type="radio" id="internet" value="internet"> Send vis internet
+  </br>
+    <input type="radio" id="sms" value="sms"> Send vis SMS
+        
+        <h4>Select shape to mark the location</h4>
+
+        <select class="select">
+
+            <option selected>Geo Shape</option>
+            <option>Point</option>
+            <option >Line</option>
+            <option>Circle</option>
+            <option>Polygon</option>
+        </select>    
+        </br>    
+        </br>
+        <h4>Description</h4>
+        <textarea name="description" maxlength="50" placeholder="Maximum 50 letter"></textarea>
+
+      <input type="submit" id="submit-button">
+
+
   </div>
 </div>
   <script>
+
+(function(){
+  setInterval("changeOnlineStatus()", 3000)
+})();
+
+function changeOnlineStatus()
+{
+  if(checkOnline())
+  {
+      $("#onlineStatus").text("Status: Online Now").css('color','green');
+       $("input#internet").attr('disabled',false);
+  }
+  else
+  {
+      $("#onlineStatus").text("Status: Offline Now").css('color','red');;
+       $("input#internet").attr('disabled',true);
+  }
+
+} 
+
+function checkOnline()
+{
+      return navigator.onLine;
+}
 
   //Map unity----------------------------------------------------------------
     var osmUrl = 'Tiles/{z}/{x}/{y}.png',

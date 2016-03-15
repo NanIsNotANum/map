@@ -887,7 +887,7 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 	options: {
 		shapeOptions: {
 			stroke: true,
-			color: '#f06eaa',
+			color: '#000000',
 			weight: 4,
 			opacity: 0.5,
 			fill: true,
